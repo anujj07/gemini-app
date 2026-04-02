@@ -1,7 +1,7 @@
-import React, { useContext, useEffect, useRef } from 'react';
-import './Main.css';
-import { assets } from '../../assets/assets';
-import { Context } from '../../context/context';
+import { useContext, useEffect, useRef } from "react";
+import "./Main.css";
+import { assets } from "../../assets/assets";
+import { Context } from "../../Context/context";
 
 const cardData = [
   { text: "Suggest some beautiful places...", icon: assets.compass_icon, alt: "Compass Icon" },
@@ -24,44 +24,39 @@ const Main = () => {
   const bottomRef = useRef(null);
 
   const handleSend = () => {
-    if (input.trim() !== '') {
+    if (input.trim() !== "") {
       onSent(input);
-      setInput(""); // clear input after send
     }
   };
 
   const handleCardClick = (cardText) => {
     onSent(cardText);
-    setInput("");
   };
 
-  // ✅ Auto scroll to bottom when result updates
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [resultData, loading]);
 
   return (
-    <div className='main'>
-      {/* Top Navbar */}
+    <div className="main">
       <div className="nav">
         <p>Gemini Demo</p>
-        <img className='nav-avatar' src={assets.man_icon} alt="User Icon" />
+        <img className="nav-avatar" src={assets.man_icon} alt="User Icon" />
       </div>
 
-      {/* Main Content */}
       <div className="main-container">
         {!showResult ? (
           <>
             <div className="geet">
-              <p><span>Hello, Sir.</span></p>
+              <p><span>Hello there.</span></p>
               <p>How can I help you today?</p>
             </div>
 
             <div className="cards">
-              {cardData.map((card, index) => (
+              {cardData.map((card) => (
                 <div
                   className="card"
-                  key={index}
+                  key={card.text}
                   onClick={() => handleCardClick(card.text)}
                 >
                   <p>{card.text}</p>
@@ -71,7 +66,7 @@ const Main = () => {
             </div>
           </>
         ) : (
-          <div className='result'>
+          <div className="result">
             <div className="result-title">
               <img src={assets.code_icon} alt="Prompt Icon" />
               <p>{recentPrompt}</p>
@@ -80,30 +75,28 @@ const Main = () => {
             <div className="result-data">
               <img src={assets.gemini_icon} alt="Gemini Icon" />
               {loading ? (
-                <div className='loader'>
+                <div className="loader">
                   <hr />
                   <hr />
                   <hr />
                 </div>
               ) : (
-                <p dangerouslySetInnerHTML={{ __html: resultData }}></p>
+                <p className="result-text">{resultData}</p>
               )}
             </div>
           </div>
         )}
 
-        {/* ✅ Scroll target */}
         <div ref={bottomRef}></div>
 
-        {/* Input Section */}
         <div className="main-bottom">
           <div className="search-box">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
               type="text"
-              placeholder='Enter your question here'
+              placeholder="Enter your question here"
             />
             <div>
               <img src={assets.gallery_icon} alt="Gallery Icon" />

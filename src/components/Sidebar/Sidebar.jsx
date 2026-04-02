@@ -1,17 +1,16 @@
-import React, { useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 import "./Sidebar.css";
 import { assets } from '../../assets/assets'; 
-import { Context } from '../../context/context';
-import { useTheme } from '../../context/ThemeContext';
+import { Context } from '../../Context/context';
+import { useTheme } from '../../Context/useTheme';
 
 const Sidebar = () => {
   const [extended, setExtended] = useState(false);
-  const { onSent, prevPrompts, setRecentPrompt } = useContext(Context);
+  const { onSent, prevPrompts, resetChat } = useContext(Context);
   const { isDarkMode, toggleTheme } = useTheme();
 
   const handleRecentClick = (prompt) => {
-    setRecentPrompt(prompt);
-    onSent(prompt);
+    onSent(prompt, { savePrompt: false });
   };
 
   return (
@@ -24,7 +23,7 @@ const Sidebar = () => {
           alt="Menu Icon"
         />
 
-        <div className="new-chat" onClick={() => window.location.reload()}>
+        <div className="new-chat" onClick={resetChat}>
           <img src={assets.plus_icon} alt="New Chat" />
           {extended ? <p>New Chat</p> : null}
         </div>
@@ -73,7 +72,7 @@ const Sidebar = () => {
           color: 'var(--text-primary)'
         }}
       >
-        {isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
+        {isDarkMode ? 'Light Mode' : 'Dark Mode'}
       </button>
     </div>
   );

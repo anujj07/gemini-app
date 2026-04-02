@@ -1,7 +1,6 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useRef, useState } from "react";
 
 const Context = createContext();
-const GEMINI_API_KEY = 'AIzaSyDWHKj2a3_epi7Bz_FuaO0474fZpj4jtBk'; // Replace with your actual Gemini API key
 
 const ContextProvider = ({ children }) => {
   const [input, setInput] = useState("");
@@ -10,27 +9,55 @@ const ContextProvider = ({ children }) => {
   const [showResult, setShowResult] = useState(false);
   const [loading, setLoading] = useState(false);
   const [resultData, setResultData] = useState("");
-  const [responseArray, setResponseArray] = useState([]);
+  const timeoutsRef = useRef([]);
 
-  const delayPara = (index, nextWord) => {
-    setTimeout(() => {
-      setResultData(prev => prev + nextWord);
-    }, 75 * index);
+  const clearTypingTimers = () => {
+    timeoutsRef.current.forEach(clearTimeout);
+    timeoutsRef.current = [];
   };
 
-  const onSent = async (promptText) => {
+  useEffect(() => clearTypingTimers, []);
+
+  const startTypingEffect = (text) => {
+    clearTypingTimers();
+    setResultData("");
+
+    const chunks = text.match(/\S+\s*/g) ?? [text];
+
+    chunks.forEach((chunk, index) => {
+      const timeoutId = setTimeout(() => {
+        setResultData((prev) => prev + chunk);
+      }, 40 * index);
+
+      timeoutsRef.current.push(timeoutId);
+    });
+  };
+
+  const resetChat = () => {
+    clearTypingTimers();
+    setInput("");
+    setRecentPrompt("");
+    setPrevPrompts([]);
+    setShowResult(false);
+    setLoading(false);
+    setResultData("");
+  };
+
+  const onSent = async (promptText, options = {}) => {
     const prompt = promptText?.trim();
     if (!prompt) return;
 
+    const shouldSavePrompt = options.savePrompt ?? true;
+
+    clearTypingTimers();
     setInput("");
     setLoading(true);
     setRecentPrompt(prompt);
-    setPrevPrompts(prev=>[...prev,input])
-    setResultData(""); // Clear old data before typing effect
+    setShowResult(true);
+    setResultData("");
 
     try {
-      // Call your backend instead of Gemini API directly
-      const response = await fetch("http://localhost:5000/api/chat", {
+      const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -43,42 +70,23 @@ const ContextProvider = ({ children }) => {
       }
 
       const data = await response.json();
-      const responseText = data.text;
+      const responseText = data?.text;
 
       if (!responseText) {
-        setResultData("⚠️ Sorry, something went wrong or quota was reached.");
-        setResponseArray([]);
+        setResultData("Sorry, something went wrong or quota was reached.");
         return;
       }
 
-      // Formatting response
-      const parts = responseText.split("**").map((part) => part.trim());
-      let newResponse = "";
+      startTypingEffect(responseText);
 
-      for (let i = 0; i < parts.length; i++) {
-        if (i % 2 === 1) {
-          newResponse += `<b>${parts[i]}</b>`;
-        } else {
-          newResponse += parts[i];
-        }
+      if (shouldSavePrompt) {
+        setPrevPrompts((prev) =>
+          prev.includes(prompt) ? prev : [prompt, ...prev].slice(0, 10)
+        );
       }
-
-      newResponse = newResponse.split("*").join("<br />");
-      const newResponseArray = newResponse.split(" ");
-
-      //typing effect
-      for (let i = 0; i < newResponseArray.length; i++) {
-        const nextWord = newResponseArray[i];
-        delayPara(i, nextWord + " ");
-      }
-
-      setResponseArray(parts.filter(Boolean));
-      setPrevPrompts((prev) => [...prev, prompt]);
-      setShowResult(true);
     } catch (error) {
-      console.error("❌ Error during API call:", error);
-      setResultData("❌ Error: Unable to get a response.");
-      setResponseArray([]);
+      console.error("Error during API call:", error);
+      setResultData("Error: Unable to get a response.");
     } finally {
       setLoading(false);
     }
@@ -90,10 +98,10 @@ const ContextProvider = ({ children }) => {
     recentPrompt,
     setRecentPrompt,
     prevPrompts,
+    resetChat,
     showResult,
     loading,
     resultData,
-    responseArray,
     onSent,
   };
 

@@ -47,7 +47,7 @@ body {
   border-radius: 50%;
   object-fit: cover;
   cursor: pointer;
-  border: 2px solid rgba(0,0,0,0.1);
+  border: 2px solid rgb(108, 245, 242);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -148,6 +148,11 @@ body {
   font-size: 17px;
   line-height: 1.8;
   opacity: 0.9;
+}
+
+.result-text {
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 /* ===== LOADER ===== */

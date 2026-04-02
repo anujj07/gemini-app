@@ -1,5 +1,5 @@
-import React from 'react';
-import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { ThemeProvider } from './Context/ThemeContext';
+import { useTheme } from './Context/useTheme';
 import Sidebar from './components/Sidebar/Sidebar';
 import Main from './components/Main/Main';
 import './styles/theme.css';
